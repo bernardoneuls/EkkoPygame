@@ -31,3 +31,8 @@ Este é um projeto feito por fãs e sem fins lucrativos. Não possui qualquer v�
 Bernardo da Silva Neuls
 
 RA: 1138654
+
+# Tester
+Guilherme Menzen Piovesan
+
+RA: 1137973
