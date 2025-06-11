@@ -32,6 +32,6 @@ Bernardo da Silva Neuls
 
 RA: 1138654
 
-Tesador do jogo: Guilherme Menzen
+Testador do jogo: Guilherme Menzen
 
 RA:1137973
