@@ -27,10 +27,11 @@ Arquivos de texto (log.dat): Armazenamento local do ranking de pontuações.
 # Aviso Legal
 Este é um projeto feito por fãs e sem fins lucrativos. Não possui qualquer vínculo oficial com a Riot Games ou qualquer detentora dos direitos de League of Legends. Todos os direitos sobre nomes, personagens, imagens e sons pertencem aos seus respectivos criadores.
 
-# Desenvolvedor
+# Desenvolvedor e Testador
 Bernardo da Silva Neuls
 
 RA: 1138654
 
 Tesador do jogo: Guilherme Menzen
+
 RA:1137973
