@@ -37,23 +37,28 @@ fonte_morte = pygame.font.SysFont("arial",120)
 pygame.mixer.music.load("assets/ekkosoundtrack.mp3.mp3")
 
 def tela_boas_vindas(nome):
-    larguraButtonStart = 150
-    alturaButtonStart = 40
-    
     falar(f"Bem-vindo {nome}! Use as setas para mover o Ekko e desvie dos hexcores. Boa sorte!")
     
+    larguraButtonStart = 150
+    alturaButtonStart = 40
+    startButton = pygame.Rect(425, 450, larguraButtonStart, alturaButtonStart)
+    
     while True:
+        mouse_pos = pygame.mouse.get_pos()
+        
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                quit()
-            elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if startButton.collidepoint(evento.pos):
-                    larguraButtonStart = 140
-                    alturaButtonStart = 35
-            elif evento.type == pygame.MOUSEBUTTONUP:
-                if startButton.collidepoint(evento.pos):
-                    return
+                pygame.quit()
+                return False
+            
+            if evento.type == pygame.MOUSEBUTTONDOWN and startButton.collidepoint(mouse_pos):
+                larguraButtonStart = 140
+                alturaButtonStart = 35
+            
+            if evento.type == pygame.MOUSEBUTTONUP and startButton.collidepoint(mouse_pos):
+                return True
         
+        #Desenhar tela
         tela.blit(fundo_start, (0, 0))
         
         #Mensagem de boas-vindas
@@ -74,7 +79,7 @@ def tela_boas_vindas(nome):
             texto = fonte_menu.render(linha, True, branco)
             tela.blit(texto, (400, 250 + i * 30))
         
-        #Botão
+        # Botão
         startButton = pygame.draw.rect(tela, branco, (425, 450, larguraButtonStart, alturaButtonStart), border_radius=15)
         startTexto = fonte_menu.render("Iniciar Jogo", True, preto)
         tela.blit(startTexto, (450, 460))
@@ -109,6 +114,9 @@ def jogar():
     botao.pack()
 
     root.mainloop()
+
+    if not tela_boas_vindas(nome):
+        return
     posicaoXPersona = 250
     posicaoYPersona = 500
     movimentoXPersona  = 0
@@ -230,43 +238,34 @@ def jogar():
 
 
 def start():
-    larguraButtonStart = 150
-    alturaButtonStart  = 40
-    larguraButtonQuit = 150
-    alturaButtonQuit  = 40
-    
-
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                quit()
-            elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if startButton.collidepoint(evento.pos):
-                    larguraButtonStart = 140
-                    alturaButtonStart  = 35
-                if quitButton.collidepoint(evento.pos):
-                    larguraButtonQuit = 140
-                    alturaButtonQuit  = 35
-
-                
-            elif evento.type == pygame.MOUSEBUTTONUP:
-                if startButton.collidepoint(evento.pos):
-                    larguraButtonStart = 150
-                    alturaButtonStart  = 40
-                    jogar()
-                if quitButton.collidepoint(evento.pos):
-                    larguraButtonQuit = 150
-                    alturaButtonQuit  = 40
-                    quit()
+                pygame.quit()
+                return
             
-        tela.fill(branco)
-        tela.blit(fundo_start, (0,0) )
-
-        startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                
+                # Botão Iniciar
+                if 10 <= mouse_pos[0] <= 160 and 10 <= mouse_pos[1] <= 50:
+                    jogar()
+                
+                #Botão Sair
+                elif 10 <= mouse_pos[0] <= 160 and 60 <= mouse_pos[1] <= 100:
+                    pygame.quit()
+                    return
+        
+        #Desenhar tela inicial
+        tela.blit(fundo_start, (0,0))
+        
+        #Desenhar botão Iniciar
+        pygame.draw.rect(tela, branco, (10, 10, 150, 40), border_radius=15)
         startTexto = fonte_menu.render("Iniciar Game", True, preto)
         tela.blit(startTexto, (25,12))
         
-        quitButton = pygame.draw.rect(tela, branco, (10,60, larguraButtonQuit, alturaButtonQuit), border_radius=15)
+        #Desenhar botão Sair
+        pygame.draw.rect(tela, branco, (10, 60, 150, 40), border_radius=15)
         quitTexto = fonte_menu.render("Sair do Game", True, preto)
         tela.blit(quitTexto, (25,62))
         
@@ -278,78 +277,83 @@ def dead():
      #Captura reação por voz
     falar("Anomalia te infectou, Ekko. Adeus.")
     time.sleep(1)
-    reacao = reconhecer_voz()
-    
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(explosao_sound)
-    larguraButtonStart = 150
-    alturaButtonStart  = 40
-    larguraButtonQuit = 150
-    alturaButtonQuit  = 40
     
+    # Configurações dos botões
+    botoes = {
+        'reiniciar': {'rect': pygame.Rect(350, 400, 300, 50), 'texto': "Jogar Novamente", 'cor': branco},
+        'sair': {'rect': pygame.Rect(350, 470, 300, 50), 'texto': "Sair do Jogo", 'cor': branco},
+        'log': {'rect': pygame.Rect(350, 540, 300, 50), 'texto': "Ver Pontuações", 'cor': branco}
+    }
     
-    root = tk.Tk()
-    root.title("Tela da Morte")
-
-    #Adiciona um título na tela
-    label = tk.Label(root, text="Log das Partidas", font=("Arial", 16))
-    label.pack(pady=10)
-
-    #Criação do Listbox para mostrar o log
-    listbox = tk.Listbox(root, width=50, height=10, selectmode=tk.SINGLE)
-    listbox.pack(pady=20)
-
-    #Adiciona o log das partidas no Listbox
-    log_partidas = open("base.atitus", "r").read()
-    log_partidas = json.loads(log_partidas)
-    for chave in log_partidas:
-        listbox.insert(tk.END, f"Pontos: {log_partidas[chave][0]} na data: {log_partidas[chave][1]} - Nickname: {chave}")  # Adiciona cada linha no Listbox
-    
-    root.mainloop()
     while True:
+        mouse_pos = pygame.mouse.get_pos()
+        
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                quit()
-            elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if startButton.collidepoint(evento.pos):
-                    larguraButtonStart = 140
-                    alturaButtonStart  = 35
-                if quitButton.collidepoint(evento.pos):
-                    larguraButtonQuit = 140
-                    alturaButtonQuit  = 35
-
-                
-            elif evento.type == pygame.MOUSEBUTTONUP:
-                #Verifica se o clique foi dentro do retângulo
-                if startButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
-                    larguraButtonStart = 150
-                    alturaButtonStart  = 40
-                    jogar()
-                if quitButton.collidepoint(evento.pos):
-                    #pygame.mixer.music.play(-1)
-                    larguraButtonQuit = 150
-                    alturaButtonQuit  = 40
-                    quit()
-                    
-        
+                pygame.quit()
+                return
             
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                for nome_botao, botao in botoes.items():
+                    if botao['rect'].collidepoint(mouse_pos):
+                        botao['cor'] = (200, 200, 200)  # Cinza claro quando pressionado
             
-        tela.fill(branco)
-        tela.blit(fundo_dead, (0,0) )
-
+            if evento.type == pygame.MOUSEBUTTONUP:
+                for nome_botao, botao in botoes.items():
+                    botao['cor'] = branco  # Volta ao branco
+                    if botao['rect'].collidepoint(mouse_pos):
+                        if nome_botao == 'reiniciar':
+                            jogar()
+                            return
+                        elif nome_botao == 'sair':
+                            pygame.quit()
+                            return
+                        elif nome_botao == 'log':
+                            mostrar_log()
         
-        startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
-        startTexto = fonte_menu.render("Iniciar Game", True, preto)
-        tela.blit(startTexto, (25,12))
+        # Desenhar tela de morte
+        tela.blit(fundo_dead, (0, 0))
         
-        quitButton = pygame.draw.rect(tela, branco, (10,60, larguraButtonQuit, alturaButtonQuit), border_radius=15)
-        quitTexto = fonte_menu.render("Sair do Game", True, preto)
-        tela.blit(quitTexto, (25,62))
-
-
+        # Texto "Você Morreu"
+        texto_morte = fonte_morte.render("Você Morreu!", True, (255, 0, 0))
+        tela.blit(texto_morte, (250, 200))
+        
+        # Desenhar botões
+        for botao in botoes.values():
+            pygame.draw.rect(tela, botao['cor'], botao['rect'], border_radius=10)
+            texto = fonte_menu.render(botao['texto'], True, preto)
+            tela.blit(texto, (botao['rect'].x + 50, botao['rect'].y + 15))
+        
         pygame.display.update()
         relogio.tick(60)
 
+def mostrar_log():
+    root = tk.Tk()
+    root.title("Histórico de Partidas")
+    root.geometry("600x400")
+    
+    frame = tk.Frame(root)
+    frame.pack(fill=tk.BOTH, expand=True)
+    
+    scrollbar = tk.Scrollbar(frame)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    
+    listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, width=80, font=('Arial', 12))
+    listbox.pack(fill=tk.BOTH, expand=True)
+    
+    scrollbar.config(command=listbox.yview)
+    
+    try:
+        with open("base.atitus", "r") as f:
+            log_partidas = json.load(f)
+            for nome_jogador, dados in log_partidas.items():
+                listbox.insert(tk.END, f"{nome_jogador}: {dados[0]} pontos em {dados[1]}")
+    except Exception as e:
+        listbox.insert(tk.END, "Nenhum registro encontrado" if "No such file" in str(e) else f"Erro: {str(e)}")
+    
+    tk.Button(root, text="Fechar", command=root.destroy).pack(pady=10)
+    root.mainloop()
 
 start()
